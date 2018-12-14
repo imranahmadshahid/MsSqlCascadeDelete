@@ -57,14 +57,17 @@ set @sql ="IF (OBJECT_ID('"+@currentkey+"') IS NOT NULL) " + "alter table "+ @cu
 insert into  #DeleteConstraints(sqlStatement)values(@sql)
 SET QUOTED_IDENTIFIER ON;
 
+Declare @deletionSql varchar(max)
 set @sql = 'ALTER TABLE ' + @currenttableName +
 ' ADD CONSTRAINT ' +  @currentkey + 
 ' FOREIGN KEY (' + @currenttableKey+')' +
-' REFERENCES ['+ @currentparentTableName + ']('+@currentparentTableKey+')'+
-' ON DELETE CASCADE;'
+' REFERENCES ['+ @currentparentTableName + ']('+@currentparentTableKey+')'
+
+set @deletionSql = 'Begin Try ' + @sql + ' ON DELETE CASCADE;' + ' End Try Begin Catch ' + @sql +' End Catch' 
 
 
-insert into  #AddConstraints(sqlStatement)values(@sql)
+
+insert into  #AddConstraints(sqlStatement)values(@deletionSql)
 
 
 Delete from #foreignKeyDetails where foreignKey=@currentkey
